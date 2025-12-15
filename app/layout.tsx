@@ -32,16 +32,21 @@ export const metadata: Metadata = {
   },
 }
 
+import { Toaster } from "sonner"
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="id" className={`${playfair.variable} ${inter.variable}`}>
-      <body className="font-sans antialiased bg-stone-50 text-slate-800">
-        <AuthProvider>{children}</AuthProvider>
+    <html lang="id" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="font-sans antialiased text-slate-800 bg-slate-50">
         <Analytics />
+        <AuthProvider>
+          {children}
+          <Toaster richColors position="top-right" />
+        </AuthProvider>
       </body>
     </html>
   )

@@ -1,25 +1,13 @@
 import { Star, Clock, Users } from "lucide-react"
 import Link from "next/link"
+import { Package } from "@/lib/types/database"
+import { getPackageImage } from "@/lib/utils/image"
 
-async function getPackages() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/packages?featured=true&limit=3`,
-      {
-        cache: "no-store",
-      },
-    )
-    if (!res.ok) return []
-    return res.json()
-  } catch (error) {
-    console.error("Failed to fetch packages:", error)
-    return []
-  }
+interface PackagesSectionProps {
+  packages: Package[]
 }
 
-export default async function PackagesSection() {
-  const packages = await getPackages()
-
+export default function PackagesSection({ packages }: PackagesSectionProps) {
   return (
     <section id="packages" className="py-20 px-4 bg-stone-50">
       <div className="max-w-7xl mx-auto">
@@ -33,7 +21,7 @@ export default async function PackagesSection() {
 
         {/* Cards Grid */}
         <div className="grid md:grid-cols-3 gap-8">
-          {packages.map((pkg: any) => (
+          {packages.map((pkg) => (
             <div
               key={pkg.id}
               className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-slate-100"
@@ -41,11 +29,11 @@ export default async function PackagesSection() {
               {/* Image Container */}
               <div className="relative h-64 overflow-hidden">
                 <img
-                  src={pkg.image_url || "/placeholder.svg"}
+                  src={getPackageImage(pkg.gallery_images)}
                   alt={pkg.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                {pkg.featured && (
+                {pkg.is_featured && (
                   <div className="absolute top-4 right-4 bg-yellow-500 text-emerald-900 px-3 py-1 rounded-full text-xs font-bold">
                     Popular
                   </div>
@@ -63,15 +51,15 @@ export default async function PackagesSection() {
                       <Star
                         key={i}
                         size={16}
-                        className={i < Math.floor(pkg.rating) ? "fill-yellow-500 text-yellow-500" : "text-slate-300"}
+                        className={i < 4 ? "fill-yellow-500 text-yellow-500" : "text-slate-300"}
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-slate-600">{pkg.rating}</span>
+                  <span className="text-sm text-slate-600">4.8</span>
                 </div>
 
                 {/* Description */}
-                <p className="text-slate-600 text-sm mb-4 line-clamp-2">{pkg.description}</p>
+                <p className="text-slate-600 text-sm mb-4 line-clamp-2">{pkg.short_description}</p>
 
                 {/* Details */}
                 <div className="space-y-2 mb-6 text-sm text-slate-600">
@@ -81,7 +69,7 @@ export default async function PackagesSection() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Users size={16} className="text-emerald-600" />
-                    <span>Max 10 orang</span>
+                    <span>Max {pkg.max_participants} orang</span>
                   </div>
                 </div>
 
@@ -89,7 +77,7 @@ export default async function PackagesSection() {
                 <div className="flex justify-between items-center pt-4 border-t border-slate-100">
                   <div>
                     <span className="text-emerald-600 font-bold text-lg">
-                      {pkg.price === 0 ? "Gratis" : `Rp ${(pkg.price / 1000).toFixed(0)}K`}
+                      Rp {pkg.price?.toLocaleString('id-ID')}
                     </span>
                     <p className="text-slate-400 text-xs">/per orang</p>
                   </div>

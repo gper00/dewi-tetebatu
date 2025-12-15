@@ -1,37 +1,29 @@
 import { createServerClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
 import Link from "next/link"
-import PackagesTable from "@/components/admin/packages-table"
+import { Plus } from "lucide-react"
+import PackagesClient from "./packages-client"
 
 export default async function AdminPackagesPage() {
   const supabase = await createServerClient()
-
-  const { data: packages, error } = await supabase
+  const { data: packages } = await supabase
     .from("packages")
     .select("*")
     .order("created_at", { ascending: false })
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Paket Wisata</h1>
-          <p className="text-gray-600 mt-1">Kelola semua paket wisata</p>
-        </div>
-        <Link href="/admin/packages/new">
-          <Button className="bg-emerald-600 hover:bg-emerald-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Tambah Paket
-          </Button>
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">Manajemen Paket Wisata</h1>
+        <Link
+          href="/admin/packages/create"
+          className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
+        >
+          <Plus size={18} />
+          Tambah Paket
         </Link>
       </div>
 
-      {error ? (
-        <div className="text-red-600">Error loading packages: {error.message}</div>
-      ) : (
-        <PackagesTable packages={packages || []} />
-      )}
+      <PackagesClient initialPackages={packages || []} />
     </div>
   )
 }

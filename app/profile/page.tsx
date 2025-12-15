@@ -1,207 +1,243 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Navbar from "@/components/navbar"
-import FooterSection from "@/components/footer-section"
-import { useAuth } from "@/contexts/auth-context"
 import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { User, Mail, Camera, Save, AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { Loader2, Save, Lock, User, Key } from "lucide-react"
+import Navbar from "@/components/navbar"
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user, profile, loading: authLoading, refreshProfile } = useAuth()
-  const [fullName, setFullName] = useState("")
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const supabase = createClient()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
+  const [user, setUser] = useState<any>(null)
+
+  // Profile Form
+  const [profileData, setProfileData] = useState({
+    full_name: "",
+    avatar_url: "",
+    email: "",
+  })
+
+  // Password Form
+  const [passwordData, setPasswordData] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  })
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login")
-    }
-    if (profile) {
-      setFullName(profile.full_name)
-      if (profile.avatar_url) {
-        setAvatarPreview(profile.avatar_url)
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      setUser(user)
+      // Fetch public profile
+      const { data: profile } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single()
+
+      if (profile) {
+        setProfileData({
+          full_name: profile.full_name || "",
+          avatar_url: profile.avatar_url || "",
+          email: profile.email || "",
+        })
       }
     }
-  }, [user, profile, authLoading, router])
+    fetchProfile()
+  }, [router, supabase])
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setAvatarFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    setSuccess("")
     setLoading(true)
 
     try {
-      const supabase = createClient()
+      if (!user) throw new Error("No user found")
 
-      let avatarUrl = profile?.avatar_url
-
-      // Upload avatar if changed
-      if (avatarFile && user) {
-        const fileExt = avatarFile.name.split(".").pop()
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`
-
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, avatarFile, {
-          upsert: true,
-        })
-
-        if (uploadError) throw uploadError
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("avatars").getPublicUrl(fileName)
-
-        avatarUrl = publicUrl
-      }
-
-      const { error: updateError } = await supabase
+      // Update public.users table
+      const { error: profileError } = await supabase
         .from("users")
         .update({
-          full_name: fullName,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
+          full_name: profileData.full_name,
+          avatar_url: profileData.avatar_url,
         })
-        .eq("id", user!.id)
+        .eq("id", user.id)
 
-      if (updateError) throw updateError
+      if (profileError) throw profileError
 
-      await refreshProfile()
-      setSuccess("Profile berhasil diupdate!")
-      setAvatarFile(null)
-    } catch (err: any) {
-      setError(err.message || "Failed to update profile")
+      // Update auth metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { full_name: profileData.full_name, avatar_url: profileData.avatar_url }
+      })
+
+      if (authError) throw authError
+
+      toast.success("Profil berhasil diperbarui")
+      router.refresh()
+    } catch (error: any) {
+      toast.error("Gagal update profil: " + error.message)
     } finally {
       setLoading(false)
     }
   }
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-600">Loading...</p>
-        </div>
-      </div>
-    )
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Password konfirmasi tidak cocok")
+      setLoading(false)
+      return
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error("Password minimal 6 karakter")
+      setLoading(false)
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      })
+
+      if (error) throw error
+
+      toast.success("Password berhasil diubah")
+      setPasswordData({ newPassword: "", confirmPassword: "" })
+    } catch (error: any) {
+      toast.error("Gagal ubah password: " + error.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (!user) return null
-
   return (
-    <div className="min-h-screen bg-stone-50 pt-24">
+    <div className="min-h-screen bg-stone-50">
       <Navbar />
+      <div className="pt-24 pb-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-serif font-bold text-slate-800">Profil Saya</h1>
+            <p className="text-slate-600">Kelola informasi akun Anda</p>
+          </div>
 
-      <section className="py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="font-serif font-bold text-3xl text-slate-900 mb-8">Profil Saya</h1>
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Profile Settings */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                  <User size={20} />
+                </div>
+                <h2 className="font-bold text-lg text-slate-800">Informasi Pribadi</h2>
+              </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Informasi Akun</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {error && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {success && (
-                <Alert className="mb-4 border-emerald-200 bg-emerald-50">
-                  <AlertDescription className="text-emerald-800">{success}</AlertDescription>
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Avatar */}
-                <div className="flex flex-col items-center gap-4">
-                  <div className="relative">
-                    {avatarPreview ? (
-                      <Image
-                        src={avatarPreview || "/placeholder.svg"}
-                        alt="Avatar"
-                        width={120}
-                        height={120}
-                        className="w-28 h-28 rounded-full object-cover border-4 border-emerald-100"
-                      />
-                    ) : (
-                      <div className="w-28 h-28 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-emerald-200">
-                        <User className="w-12 h-12 text-emerald-600" />
-                      </div>
-                    )}
-                    <label className="absolute bottom-0 right-0 bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-full cursor-pointer transition-colors">
-                      <Camera size={18} />
-                      <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
-                    </label>
-                  </div>
-                  <p className="text-sm text-slate-600">Klik ikon kamera untuk ubah foto</p>
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                  <input
+                    type="text"
+                    value={profileData.email}
+                    disabled
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed"
+                  />
                 </div>
 
-                {/* Email (Read only) */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input id="email" type="email" value={user.email} className="pl-9" disabled />
-                  </div>
-                  <p className="text-xs text-slate-500">Email tidak dapat diubah</p>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+                  <input
+                    type="text"
+                    value={profileData.full_name}
+                    onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    required
+                  />
                 </div>
 
-                {/* Full Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Nama Lengkap</Label>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">URL Foto (Optional)</label>
+                  <input
+                    type="url"
+                    value={profileData.avatar_url}
+                    onChange={(e) => setProfileData({ ...profileData, avatar_url: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-70"
+                  >
+                    {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    Simpan Profil
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Security Settings */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
+              <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                  <Lock size={20} />
+                </div>
+                <h2 className="font-bold text-lg text-slate-800">Keamanan & Password</h2>
+              </div>
+
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Password Baru</label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Nama Anda"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="pl-9"
-                      required
+                    <Key className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                    <input
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Min. 6 karakter"
                     />
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
-                  <Save className="mr-2" size={18} />
-                  {loading ? "Menyimpan..." : "Simpan Perubahan"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Password</label>
+                  <div className="relative">
+                    <Key className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                    <input
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Ulangi password"
+                    />
+                  </div>
+                </div>
 
-      <FooterSection />
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading || !passwordData.newPassword}
+                    className="w-full bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {loading ? <Loader2 className="animate-spin" size={16} /> : <Lock size={16} />}
+                    Update Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

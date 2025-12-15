@@ -2,18 +2,19 @@ import Link from "next/link"
 import Navbar from "@/components/navbar"
 import FooterSection from "@/components/footer-section"
 import { ArrowRight, Calendar, User } from "lucide-react"
+import { AppImage } from "@/components/ui/app-image"
+
+import { createServerClient } from "@/lib/supabase/server"
 
 async function getBlogPosts() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/blog?limit=10`, {
-      cache: "no-store",
-    })
-    if (!res.ok) return []
-    return res.json()
-  } catch (error) {
-    console.error("Failed to fetch blog posts:", error)
-    return []
-  }
+  const supabase = await createServerClient()
+  const { data } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
+
+  return data || []
 }
 
 export default async function BlogPage() {
@@ -40,8 +41,8 @@ export default async function BlogPage() {
           {blogPosts.length > 0 && (
             <div className="mb-16 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
               <div className="grid md:grid-cols-2 gap-6">
-                <img
-                  src={blogPosts[0].image_url || "/placeholder.svg"}
+                <AppImage
+                  src={blogPosts[0].image_url}
                   alt={blogPosts[0].title}
                   className="w-full h-80 object-cover"
                 />
@@ -86,7 +87,9 @@ export default async function BlogPage() {
                 key={post.id}
                 className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
-                <img src={post.image_url || "/placeholder.svg"} alt={post.title} className="w-full h-48 object-cover" />
+                <div className="h-48 relative overflow-hidden">
+                  <AppImage src={post.image_url} alt={post.title} fill className="object-cover" />
+                </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full font-medium">

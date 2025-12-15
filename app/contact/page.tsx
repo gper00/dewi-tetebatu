@@ -1,9 +1,22 @@
 import Navbar from "@/components/navbar"
 import FooterSection from "@/components/footer-section"
 import MapSection from "@/components/map-section"
-import { MapPin, Phone, Mail, Clock, Send } from "lucide-react"
+import ContactForm from "@/components/contact-form"
+import { MapPin, Phone, Mail, Clock } from "lucide-react"
 
-export default function ContactPage() {
+import Navbar from "@/components/navbar"
+import FooterSection from "@/components/footer-section"
+import MapSection from "@/components/map-section"
+import ContactForm from "@/components/contact-form"
+import { MapPin, Phone, Mail, Clock } from "lucide-react"
+import { getSiteSettings } from "@/lib/services/settings"
+
+export default async function ContactPage() {
+  const settings = await getSiteSettings()
+
+  const latitude = parseFloat(settings.map_latitude || "-8.4667")
+  const longitude = parseFloat(settings.map_longitude || "116.3333")
+
   return (
     <div className="min-h-screen bg-stone-50 pt-24">
       <Navbar />
@@ -13,7 +26,7 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="font-serif font-bold text-4xl md:text-5xl mb-4 text-balance">Hubungi Kami</h1>
           <p className="text-emerald-100 text-lg max-w-2xl mx-auto">
-            Ada pertanyaan? Hubungi tim Tetebatu untuk merencanakan pengalaman wisata terbaik Anda
+            Ada pertanyaan? Hubungi tim {settings.site_name || 'Tetebatu'} untuk merencanakan pengalaman wisata terbaik Anda
           </p>
         </div>
       </section>
@@ -28,12 +41,8 @@ export default function ContactPage() {
                 <MapPin className="text-emerald-600" size={24} />
               </div>
               <h3 className="font-serif font-bold text-lg mb-2 text-slate-800">Lokasi Kami</h3>
-              <p className="text-slate-600 text-sm">
-                Tetebatu, Sikur
-                <br />
-                Kabupaten Lombok Timur
-                <br />
-                Nusa Tenggara Barat 83355
+              <p className="text-slate-600 text-sm whitespace-pre-line">
+                {settings.address || 'Tetebatu, Lombok Timur'}
               </p>
             </div>
 
@@ -43,9 +52,9 @@ export default function ContactPage() {
               </div>
               <h3 className="font-serif font-bold text-lg mb-2 text-slate-800">Telepon</h3>
               <p className="text-slate-600 text-sm">
-                +62 852-3741-0597
+                {settings.contact_phone || '-'}
                 <br />
-                <span className="text-xs text-slate-500">Hermiwandi (Contact Person)</span>
+                <span className="text-xs text-slate-500">{settings.contact_person} (Contact Person)</span>
               </p>
             </div>
 
@@ -55,7 +64,7 @@ export default function ContactPage() {
               </div>
               <h3 className="font-serif font-bold text-lg mb-2 text-slate-800">Email</h3>
               <p className="text-slate-600 text-sm">
-                wandihermi675@gmail.com
+                {settings.contact_email || '-'}
                 <br />
                 <span className="text-xs text-slate-500">Balas dalam 24 jam</span>
               </p>
@@ -64,56 +73,11 @@ export default function ContactPage() {
 
           <div className="grid md:grid-cols-2 gap-12">
             {/* Contact Form */}
-            <div>
-              <h2 className="font-serif font-bold text-3xl mb-8 text-slate-800">Kirim Pesan kepada Kami</h2>
-              <form className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="Nama Lengkap"
-                    className="px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email Anda"
-                    className="px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm"
-                  />
-                </div>
-
-                <input
-                  type="text"
-                  placeholder="Subjek"
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm"
-                />
-
-                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm text-slate-600">
-                  <option value="">-- Pilih Topik --</option>
-                  <option value="booking">Pertanyaan Booking</option>
-                  <option value="paket">Informasi Paket</option>
-                  <option value="grup">Reservasi Grup</option>
-                  <option value="kerjasama">Kerjasama</option>
-                  <option value="other">Lainnya</option>
-                </select>
-
-                <textarea
-                  placeholder="Pesan Anda"
-                  rows={5}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm resize-none"
-                />
-
-                <button
-                  type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-                >
-                  <Send size={18} />
-                  Kirim Pesan
-                </button>
-              </form>
-            </div>
+            <ContactForm />
 
             {/* Map & Operating Hours */}
             <div>
-              <MapSection latitude={-8.4667} longitude={116.3333} zoom={13} />
+              <MapSection latitude={latitude} longitude={longitude} zoom={13} />
 
               {/* Operating Hours */}
               <div className="bg-white rounded-lg p-8 shadow-sm mt-8">
@@ -154,12 +118,12 @@ export default function ContactPage() {
                 a: "Ya, kami menawarkan diskon khusus untuk kelompok. Silakan hubungi kami untuk negosiasi harga terbaik untuk grup Anda.",
               },
               {
-                q: "Apa yang harus saya bawa untuk aktivitas outdoor?",
+                q: "Apa yang harus saya bawa untuk kegiatan outdoor?",
                 a: "Bawa pakaian santai, sepatu trekking, tabir surya, topi, dan banyak air minum. Untuk trekking gunung, bawa jaket, senter, dan perlengkapan tidur.",
               },
               {
                 q: "Apakah tersedia akomodasi homestay?",
-                a: "Ya, Tetebatu memiliki berbagai pilihan homestay berkualitas. Tim kami dapat membantu Anda memilih akomodasi sesuai budget dan preferensi.",
+                a: "Ya, {settings.site_name || 'Tetebatu'} memiliki berbagai pilihan homestay berkualitas. Tim kami dapat membantu Anda memilih akomodasi sesuai budget dan preferensi.",
               },
               {
                 q: "Bagaimana dengan transportasi dari bandara?",
@@ -168,10 +132,10 @@ export default function ContactPage() {
             ].map((item, idx) => (
               <details key={idx} className="bg-white rounded-lg p-6 group">
                 <summary className="cursor-pointer font-semibold text-slate-800 flex justify-between items-center">
-                  {item.q}
+                  {item.q.replace("{settings.site_name || 'Tetebatu'}", settings.site_name || 'Tetebatu')}
                   <span className="transition-transform group-open:rotate-180">▼</span>
                 </summary>
-                <p className="text-slate-600 mt-4 text-sm leading-relaxed">{item.a}</p>
+                <p className="text-slate-600 mt-4 text-sm leading-relaxed">{item.a.replace("{settings.site_name || 'Tetebatu'}", settings.site_name || 'Tetebatu')}</p>
               </details>
             ))}
           </div>

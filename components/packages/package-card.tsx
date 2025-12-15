@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { AppImage } from "@/components/ui/app-image"
 import PackageDetailModal from "./package-detail-modal"
 
 interface Package {
@@ -41,10 +42,11 @@ export default function PackageCard({ package: pkg }: { package: Package }) {
       <div className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col h-full">
         {/* Image Container */}
         <div className="relative h-64 overflow-hidden">
-          <img
-            src={pkg.image || "/placeholder.svg"}
+          <AppImage
+            src={pkg.image}
             alt={pkg.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 

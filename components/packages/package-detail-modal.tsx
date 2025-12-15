@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { AppImage } from '@/components/ui/app-image'
 
 interface Package {
   id: number
@@ -49,8 +50,8 @@ export default function PackageDetailModal({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Image */}
-          <img
-            src={pkg.image || "/placeholder.svg"}
+          <AppImage
+            src={pkg.image}
             alt={pkg.name}
             className="w-full h-64 object-cover rounded-2xl"
           />

@@ -10,7 +10,11 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get("featured")
     const limit = searchParams.get("limit")
 
-    let query = supabase.from("packages").select("*").order("created_at", { ascending: false })
+    let query = supabase
+      .from("packages")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
 
     if (category && category !== "all") {
       query = query.eq("category", category)
@@ -27,13 +31,14 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
-      console.error("[v0] Error fetching packages:", error)
+      console.error("Error fetching packages:", error)
       return NextResponse.json({ error: "Failed to fetch packages" }, { status: 500 })
     }
 
-    return NextResponse.json({ data })
+    // Return consistent format - just the data array
+    return NextResponse.json(data || [])
   } catch (error) {
-    console.error("[v0] Unexpected error in packages API:", error)
+    console.error("Unexpected error in packages API:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

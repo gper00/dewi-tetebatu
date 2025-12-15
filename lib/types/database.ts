@@ -1,3 +1,5 @@
+// Updated Database Types for Dewi Tetebatu
+
 export type Package = {
   id: string
   slug: string
@@ -5,14 +7,16 @@ export type Package = {
   description: string
   price: number
   duration: string
-  difficulty: string
+  difficulty: 'mudah' | 'sedang' | 'sulit'
   category: string
   rating: number
   image_url: string | null
+  gallery_images: string[]
   highlights: string[]
   includes: string[]
   excludes: string[]
-  itinerary?: any
+  itinerary: any
+  is_featured: boolean
   available: boolean
   created_at: string
   updated_at: string
@@ -23,12 +27,13 @@ export type Activity = {
   slug: string
   title: string
   description: string
-  status: "akan" | "sedang" | "selesai"
+  status: 'akan' | 'sedang' | 'selesai'
   date: string
   duration: string
   price: number
   location: string
   image_url: string | null
+  gallery_images: string[]
   highlights: string[]
   includes: string[]
   max_participants: number | null
@@ -54,23 +59,6 @@ export type BlogPost = {
   updated_at: string
 }
 
-export type Booking = {
-  id: string
-  package_id: string | null
-  activity_id: string | null
-  booking_type: "package" | "activity"
-  full_name: string
-  email: string
-  phone: string
-  date: string
-  participants: number
-  special_requests: string | null
-  total_price: number
-  status: "pending" | "confirmed" | "cancelled" | "completed"
-  created_at: string
-  updated_at: string
-}
-
 export type ContactMessage = {
   id: string
   name: string
@@ -78,6 +66,77 @@ export type ContactMessage = {
   phone: string | null
   subject: string
   message: string
-  status: "unread" | "read" | "replied"
+  status: 'unread' | 'read' | 'replied'
   created_at: string
+}
+
+export type Testimonial = {
+  id: string
+  name: string
+  role: string | null
+  content: string
+  rating: number
+  image_url: string | null
+  package_id: string | null
+  activity_id: string | null
+  approved: boolean
+  created_at: string
+}
+
+export type GalleryImage = {
+  id: string
+  title: string
+  description: string | null
+  image_url: string
+  category: string
+  package_id: string | null
+  activity_id: string | null
+  featured: boolean
+  created_at: string
+}
+
+export type Setting = {
+  key: string
+  value: string
+  type: 'string' | 'number' | 'boolean' | 'json'
+  description: string | null
+  updated_at: string
+}
+
+export type User = {
+  id: string
+  email: string
+  name: string
+  phone: string | null
+  avatar_url: string | null
+  email_verified: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type AdminUser = {
+  id: string
+  email: string
+  name: string
+  role: 'admin' | 'super_admin'
+  active: boolean
+  last_login: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Booking = {
+  id: string
+  user_id: string
+  package_id: string | null
+  activity_id: string | null
+  booking_type: 'package' | 'activity'
+  participants: number
+  booking_date: string
+  total_price: number
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  customer_info: any
+  special_requests: string | null
+  created_at: string
+  updated_at: string
 }

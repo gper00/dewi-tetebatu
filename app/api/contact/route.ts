@@ -1,40 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { submitContactMessage } from "@/lib/services/contact"
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient()
     const body = await request.json()
+    const { name, email, subject, message, topic, phone } = body
 
-    // Validate required fields
-    const requiredFields = ["name", "email", "subject", "message"]
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
-      }
+    if (!name || !email || !subject || !message) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(body.email)) {
-      return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
-    }
-
-    const { data, error } = await supabase
-      .from("contact_messages")
-      .insert({
-        name: body.name,
-        email: body.email,
-        phone: body.phone || null,
-        subject: body.subject,
-        message: body.message,
-        status: "new",
-      })
-      .select()
-      .single()
+    const { data, error } = await submitContactMessage({
+      name,
+      email,
+      subject,
+      message,
+      topic,
+      phone
+    })
 
     if (error) {
-      console.error("[v0] Error creating contact message:", error)
+      console.error("Error creating contact message:", error)
       return NextResponse.json({ error: "Failed to send message" }, { status: 500 })
     }
 
@@ -45,8 +31,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 },
     )
-  } catch (error) {
-    console.error("[v0] Unexpected error in contact API:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } catch (error: any) {
+    console.error("Unexpected error in contact API:", error)
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 })
   }
 }

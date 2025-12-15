@@ -1,12 +1,15 @@
-export default function GallerySection() {
-  const images = [
-    { id: 1, query: 'mountain landscape sunset golden hour', size: 'md:col-span-2 md:row-span-2' },
-    { id: 2, query: 'happy tourists group smiling adventure', size: '' },
-    { id: 3, query: 'traditional food preparation cooking', size: '' },
-    { id: 4, query: 'rice field plantation rural nature', size: 'md:col-span-2' },
-    { id: 5, query: 'village street architecture traditional', size: '' },
-    { id: 6, query: 'sunset over mountain peaks clouds', size: 'md:row-span-2' },
-  ]
+import { AppImage } from '@/components/ui/app-image'
+import { GalleryImage } from '@/lib/services/gallery'
+
+interface GallerySectionProps {
+  images?: GalleryImage[]
+}
+
+export default function GallerySection({ images = [] }: GallerySectionProps) {
+  // Fallback if no images provided or empty
+  if (!images || images.length === 0) {
+    return null
+  }
 
   return (
     <section className="py-20 px-4 bg-white">
@@ -21,18 +24,25 @@ export default function GallerySection() {
           </p>
         </div>
 
-        {/* Masonry Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-max">
-          {images.map((img) => (
+        {/* Grid - using simple grid for now as masonry requires strict layout or lib */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {images.map((img, index) => (
             <div
               key={img.id}
-              className={`${img.size} rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 group cursor-pointer`}
+              className={`rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 group cursor-pointer relative aspect-square ${
+                // Basic pattern: made first and 6th item large if sufficient items
+                (index === 0 || index === 5) ? 'md:col-span-2 md:row-span-2' : ''
+                }`}
             >
-              <img
-                src={`/.jpg?height=300&width=300&query=${img.query}`}
-                alt={`Gallery ${img.id}`}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              <AppImage
+                src={img.image_url}
+                alt={img.title || "Gallery Image"}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                <p className="text-white font-medium truncate w-full">{img.title}</p>
+              </div>
             </div>
           ))}
         </div>

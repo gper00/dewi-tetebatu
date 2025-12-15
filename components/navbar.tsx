@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, User, LogOut, UserCircle } from "lucide-react"
+import { Menu, X, User, LogOut, UserCircle, LayoutDashboard } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import Image from "next/image"
 
@@ -50,11 +50,10 @@ export default function Navbar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`font-medium transition-colors text-sm ${
-                isActive(item.href)
-                  ? "text-emerald-600 border-b-2 border-emerald-600 pb-1"
-                  : "text-slate-600 hover:text-emerald-600"
-              }`}
+              className={`font-medium transition-colors text-sm ${isActive(item.href)
+                ? "text-emerald-600 border-b-2 border-emerald-600 pb-1"
+                : "text-slate-600 hover:text-emerald-600"
+                }`}
             >
               {item.label}
             </Link>
@@ -89,6 +88,16 @@ export default function Navbar() {
 
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2">
+                      {profile.role === 'admin' && (
+                        <Link
+                          href="/admin/dashboard"
+                          className="flex items-center gap-2 px-4 py-2 hover:bg-emerald-50 text-slate-700"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <LayoutDashboard size={18} />
+                          <span className="text-sm">Dashboard Admin</span>
+                        </Link>
+                      )}
                       <Link
                         href="/profile"
                         className="flex items-center gap-2 px-4 py-2 hover:bg-emerald-50 text-slate-700"
@@ -126,12 +135,7 @@ export default function Navbar() {
             </>
           )}
 
-          <Link
-            href="/booking"
-            className="hidden sm:block bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium text-sm"
-          >
-            Booking
-          </Link>
+
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden text-slate-600 hover:text-emerald-600 transition-colors"
@@ -149,11 +153,10 @@ export default function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`block font-medium transition-colors py-2 ${
-                  isActive(item.href)
-                    ? "text-emerald-600 border-l-4 border-emerald-600 pl-2"
-                    : "text-slate-600 hover:text-emerald-600"
-                }`}
+                className={`block font-medium transition-colors py-2 ${isActive(item.href)
+                  ? "text-emerald-600 border-l-4 border-emerald-600 pl-2"
+                  : "text-slate-600 hover:text-emerald-600"
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 {item.label}
@@ -200,13 +203,7 @@ export default function Navbar() {
               </>
             )}
 
-            <Link
-              href="/booking"
-              className="block w-full bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium mt-4 text-center"
-              onClick={() => setIsOpen(false)}
-            >
-              Booking
-            </Link>
+
           </div>
         </div>
       )}
