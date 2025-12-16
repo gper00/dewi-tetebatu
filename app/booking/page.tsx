@@ -5,7 +5,6 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/components/navbar"
-import FooterSection from "@/components/footer-section"
 import { Calendar, Users, Phone, Mail, MapPin, Send } from "lucide-react"
 
 export default function BookingPage() {
@@ -120,11 +119,10 @@ export default function BookingPage() {
                           key={pkg.id}
                           type="button"
                           onClick={() => setFormData({ ...formData, packageType: pkg.id })}
-                          className={`p-4 rounded-lg border-2 text-left transition-all ${
-                            formData.packageType === pkg.id
-                              ? "border-emerald-600 bg-emerald-50"
-                              : "border-slate-200 hover:border-emerald-300"
-                          }`}
+                          className={`p-4 rounded-lg border-2 text-left transition-all ${formData.packageType === pkg.id
+                            ? "border-emerald-600 bg-emerald-50"
+                            : "border-slate-200 hover:border-emerald-300"
+                            }`}
                         >
                           <div className="flex justify-between items-start">
                             <div>
@@ -302,8 +300,6 @@ export default function BookingPage() {
           </div>
         </div>
       </section>
-
-      <FooterSection />
     </div>
   )
 }

@@ -1,9 +1,4 @@
-import Navbar from "@/components/navbar"
-import FooterSection from "@/components/footer-section"
-import MapSection from "@/components/map-section"
-import ContactForm from "@/components/contact-form"
-import { MapPin, Phone, Mail, Clock } from "lucide-react"
-
+import Link from "next/link"
 import Navbar from "@/components/navbar"
 import FooterSection from "@/components/footer-section"
 import MapSection from "@/components/map-section"

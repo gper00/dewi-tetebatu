@@ -1,4 +1,4 @@
-"use client"
+
 import Navbar from "@/components/navbar"
 import FooterSection from "@/components/footer-section"
 import { Clock, DollarSign, Users, Share2, ArrowLeft } from "lucide-react"
