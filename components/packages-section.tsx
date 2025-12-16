@@ -67,10 +67,6 @@ export default function PackagesSection({ packages }: PackagesSectionProps) {
                     <Clock size={16} className="text-emerald-600" />
                     <span>{pkg.duration}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Users size={16} className="text-emerald-600" />
-                    <span>Max {pkg.max_participants} orang</span>
-                  </div>
                 </div>
 
                 {/* Price & CTA */}

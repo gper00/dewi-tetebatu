@@ -5,6 +5,7 @@ export type Package = {
   slug: string
   title: string
   description: string
+  short_description: string | null
   price: number
   duration: string
   difficulty: 'mudah' | 'sedang' | 'sulit'
@@ -27,6 +28,7 @@ export type Activity = {
   slug: string
   title: string
   description: string
+  short_description: string | null
   status: 'akan' | 'sedang' | 'selesai'
   date: string
   duration: string
@@ -74,7 +76,7 @@ export type Testimonial = {
   id: string
   name: string
   role: string | null
-  content: string
+  comment: string
   rating: number
   image_url: string | null
   package_id: string | null

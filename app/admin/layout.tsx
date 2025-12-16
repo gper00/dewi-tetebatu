@@ -12,15 +12,15 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Check admin role
   if (!user) {
     redirect("/login")
   }
 
-  // Check admin role
   const { data: userData } = await supabase
     .from("users")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", user!.id)
     .single()
 
   if (!userData || userData.role !== "admin") {
@@ -29,7 +29,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <AdminSidebar userRole={userData.role} userEmail={user.email || ""} />
+      <AdminSidebar userRole={userData!.role} userEmail={user!.email || ""} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">

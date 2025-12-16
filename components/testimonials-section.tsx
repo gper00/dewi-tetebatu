@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import { Star, PlusCircle, X } from 'lucide-react'
-import { Database } from "@/lib/database"
+import { Testimonial } from "@/lib/types/database"
 import { TestimonialForm } from '@/components/testimonials/testimonial-form'
-
-type Testimonial = Database['public']['Tables']['testimonials']['Row']
 
 interface TestimonialsSectionProps {
   testimonials: Testimonial[]

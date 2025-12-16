@@ -10,6 +10,7 @@ import { AppImage } from "@/components/ui/app-image"
 interface BlogPost {
   id: string
   title: string
+  slug: string
   category: string
   status: string // e.g., 'published', 'draft' -- Schema uses is_published boolean, I should map that on server or handle here
   is_published: boolean
@@ -80,8 +81,8 @@ export default function BlogClient({ initialPosts }: { initialPosts: BlogPost[] 
                   <td className="px-6 py-4">
                     <span
                       className={`px-2.5 py-1 rounded-full text-xs font-medium ${post.is_published
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-amber-100 text-amber-700"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-amber-100 text-amber-700"
                         }`}
                     >
                       {post.is_published ? "Published" : "Draft"}

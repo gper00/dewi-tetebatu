@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { Database } from '@/lib/database'
+
 
 export type SiteSetting = {
   key: string

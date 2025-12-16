@@ -1,7 +1,7 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { Database } from '@/lib/database'
+import { GalleryImage } from '@/lib/types/database'
 
-export type GalleryImage = Database['public']['Tables']['gallery_images']['Row']
+export type { GalleryImage }
 
 export async function getGalleryImages(limit = 8) {
   const supabase = await createServerClient()
